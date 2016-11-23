@@ -1,0 +1,6 @@
+0 ArenaGetAlignmentOffset#3 Memory Arena#1 
+<pre>
+inline memory_index
+ArenaGetAlignmentOffset(memory_arena *Arena, memory_index Alignment)
+</pre>
+Calculates the offset required by specified alignment.#2 ArenaGetAlignmentOffset(Arena, 8);#0 ArenaDefaultParams#3 Test Category#1 Returns default push state params.#!
