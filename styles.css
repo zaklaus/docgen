@@ -1,0 +1,60 @@
+body {
+    background-color: whitesmoke;
+    font-family: sans-serif;
+}
+
+.Page {
+    width: 800px;
+    margin: 0 auto;
+}
+
+p {
+    font-size: 15px;
+    line-height: 0.4;
+}
+
+h1 , h2 {
+    color: green;
+}
+
+a {
+    text-decoration: none;
+    color: green;
+}
+
+a:hover {
+    background-color: antiquewhite;
+}
+
+ul {
+    list-style: none;
+}
+
+pre {
+    font-family: monospace;
+    background-color: oldlace;
+    padding: 10px;
+    border: 1px solid grey;
+}
+
+table {
+    border: 1px solid grey;
+    background-color: oldlace;
+    border-collapse: collapse; 
+}
+
+tr {
+    border-bottom: 1px solid grey;
+}
+
+th {
+    text-align: left;
+    background-color: bisque;
+    padding: 5px;
+    border-right: 1px solid grey;
+}
+
+td {
+    padding: 5px;
+    border-right: 1px solid grey;
+}

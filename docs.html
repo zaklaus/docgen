@@ -1,8 +1,49 @@
-<html><title>Test Sample</title><body><div class="Page"><div class="Overview"><h1>$ Overview</h1><p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
+<html><head><title>Test Sample</title><style>body{background-color:#f5f5f5;font-family:sans-serif}.Page{width:800px;margin:0 auto}p{font-size:15px;line-height:.4}h1,h2{color:green}a{text-decoration:none;color:green}a:hover{background-color:#faebd7}ul{list-style:none}pre{font-family:monospace;background-color:#fdf5e6;padding:10px;border:1px solid grey}table{border:1px solid grey;background-color:#fdf5e6;border-collapse:collapse}tr{border-bottom:1px solid grey}th{text-align:left;background-color:#ffe4c4;padding:5px;border-right:1px solid grey}td{padding:5px;border-right:1px solid grey}</style></head><body><div class="Page"><div class="Overview"><h1>$ Overview</h1><p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
 
-The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.</p></div><h1>$ Index</h1><ul><h2>Memory Arena</h2><li> <a href="#ArenaGetAlignmentOffset">ArenaGetAlignmentOffset</a></li><h2>Test Category</h2><li> <a href="#ArenaDefaultParams">ArenaDefaultParams</a></li></ul><h1>$ Index</h1><ul><h1>$ Memory Arena</h1><div id="ArenaGetAlignmentOffset" class"doc"><h2>ArenaGetAlignmentOffset</h2><p>
-<pre>
+The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.</p></div><h1>$ Index</h1><ul><h2>Memory Arena</h2><li> <a href="#arena_header">arena_header</a> &nbsp; <small>Describes arena elements.</small></li><li> <a href="#memory_arena">memory_arena</a> &nbsp; <small>Memory arena holding contigous block of memory and tracking of pushed objects.</small></li><li> <a href="#arena_flags">arena_flags</a> &nbsp; <small>Arena flags.</small></li><li> <a href="#temp_memory">temp_memory</a> &nbsp; <small>Used to temporarily store short-living data in arena.</small></li><li> <a href="#ArenaInitialize">ArenaInitialize</a> &nbsp; <small>Initializes Memory Arena with default values.</small></li><li> <a href="#ArenaBuild">ArenaBuild</a> &nbsp; <small>Uses internal allocator to build new arena.</small></li><li> <a href="#ArenaGetAlignmentOffset">ArenaGetAlignmentOffset</a> &nbsp; <small>Calculates the offset required by specified alignment.</small></li><li> <a href="#ArenaDefaultParams">ArenaDefaultParams</a> &nbsp; <small>Returns default push state params.</small></li></ul><h1>$ Index</h1><ul><div id="arena_header" class="doc"><h2>arena_header</h2><pre>
+typedef struct
+{
+    s32 Size;    // Size of the element.
+    u32 Tag;     // Element's tag used for identification.
+    u32 Offset;  // Memory offset from the base.
+} arena_header;
+</pre><p>Describes arena elements.</p></div><div id="memory_arena" class="doc"><h2>memory_arena</h2><pre>
+typedef struct
+{
+    memory_index Size;             // Allocated memory size. 
+    uint8 *Base;                   // Memory base pointer. Points to a contigous block of memory.
+    memory_index Used;             // Memory already used by elements.
+    u8 Flags;                      // Arena's flags.
+    b32 WasExpanded;               // If reallocation is allowed, this signals us whether memory expansion has happened.
+
+    s32 TempCount;                 // Counts how many times is our arena used by temp_memory.
+    
+    Node_arena_header *Header;    // Linked list of tracked elements.
+    Node_arena_header *HeaderEnd;
+} memory_arena;
+</pre><p>Memory arena holding contigous block of memory and tracking of pushed objects.</p></div><div id="arena_flags" class="doc"><h2>arena_flags</h2><pre>
+typedef enum
+{
+    ArenaFlag_AllowRealloc = 0x1,    // Allows re-allocation of the memory, if expansion is required.
+    ArenaFlag_DisallowHeaders = 0x2, // Disallows tracking of elements. Useful if elements are of uniform size.
+} arena_flags;
+</pre><p>Arena flags.</p></div><div id="temp_memory" class="doc"><h2>temp_memory</h2><pre>
+typedef struct
+{
+    memory_arena *Arena;  // Memory Arena to be used.
+    memory_index Used;    // This holds the Arena's original used size.
+} temp_memory;
+</pre><p>Used to temporarily store short-living data in arena.</p></div><div id="ArenaInitialize" class="doc"><h2>ArenaInitialize</h2><pre>
+inline void
+ArenaInitialize(memory_arena *Arena, // Arena to be initialized.
+                memory_index Size,   // Size of the allocated memory.
+                void *Base)          // Memory block to be used with Arena.
+</pre><p>Initializes Memory Arena with default values.</p><b>Example:</b> <code>ArenaInitialize(Arena, 128, MemBlock);</code></div><div id="ArenaBuild" class="doc"><h2>ArenaBuild</h2><pre>
+inline void
+ArenaBuild(memory_arena *Arena, // Arena to be built.
+           memory_index Size)   // The size to be pre-allocated.
+</pre><p>Uses internal allocator to build new arena.</p><b>Example:</b> <code>ArenaBuild(Arena, 128);</code></div><div id="ArenaGetAlignmentOffset" class="doc"><h2>ArenaGetAlignmentOffset</h2><pre>
 inline memory_index
-ArenaGetAlignmentOffset(memory_arena *Arena, memory_index Alignment)
-</pre>
-Calculates the offset required by specified alignment.</p><b>Example:</b> <code>ArenaGetAlignmentOffset(Arena, 8);</code></div><h1>$ Test Category</h1><div id="ArenaDefaultParams" class"doc"><h2>ArenaDefaultParams</h2><p>Returns default push state params.</p></div></ul></div></body></html>
+ArenaGetAlignmentOffset(memory_arena *Arena,     // Target Arena.
+                        memory_index Alignment)  // Desired alignment
+</pre><p>Calculates the offset required by specified alignment.</p><b>Example:</b> <code>ArenaGetAlignmentOffset(Arena, 8);</code></div><div id="ArenaDefaultParams" class="doc"><h2>ArenaDefaultParams</h2><p>Returns default push state params.</p></div></ul></div></body></html>

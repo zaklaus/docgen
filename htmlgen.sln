@@ -9,6 +9,7 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "htmlgen", "htmlgen.exe", "{
 		Executable = D:\Programming\handmade\docgen\htmlgen.exe
 		RemoteMachine = DESKTOP-D4PC12E
 		StartingDirectory = D:\Programming\handmade\docgen
+		Arguments = title.txt overview.html < doc.tmp > lal.html
 		Environment = Default
 		LaunchingEngine = 00000000-0000-0000-0000-000000000000
 		UseLegacyDebugEngines = No

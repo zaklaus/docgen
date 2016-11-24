@@ -2,14 +2,12 @@
 doc(ArenaGetAlignmentOffset)
 doc_cat(Memory Arena)
 doc_string(
-<pre>
-inline memory_index
-ArenaGetAlignmentOffset(memory_arena *Arena, memory_index Alignment)
-</pre>
 Calculates the offset required by specified alignment.)
 doc_example(ArenaGetAlignmentOffset(Arena, 8);)
+
+doc_sig(
 inline memory_index
-ArenaGetAlignmentOffset(memory_arena *Arena, memory_index Alignment)
+        ArenaGetAlignmentOffset(memory_arena *Arena, memory_index Alignment))
 {
     memory_index AlignmentOffset = 0;
     

@@ -10,17 +10,23 @@ typedef enum
     Desc,
     Expl,
     Categ,
+    Sig,
+    Ret,
 } Doc_States;
 
 int
 main(int argc, char **argv)
 {
+
     if(argc < 2)
     {
         fprintf(stderr, "Argument not passed!\n");
         return(1);
     }
     FILE *File = fopen(argv[1], "r");
+    fseek(File, 0, SEEK_END);
+    int FileSize = ftell(File);
+    rewind(File);
     
     if(!File)
     {
@@ -31,10 +37,12 @@ main(int argc, char **argv)
     {
         // NOTE(zaklaus): No need for damn whole-File-read BS.
         char *Ptr = 0;
-        char Buffer[256], FileData[256];
+        static char *Buffer = 0, *FileData = 0;
+        Buffer = PlatformMemAlloc(FileSize);
+        FileData = PlatformMemAlloc(FileSize);
         size_t Line = 3;
         
-        while(fread(FileData, sizeof(char), 256, File))
+        while(fread(FileData, sizeof(char), FileSize, File))
         {
             Ptr = FileData;
             size_t Idx = 0;
@@ -75,17 +83,33 @@ main(int argc, char **argv)
                     Ptr += 8;
                     //Buffer[Idx++] = *Ptr;
                 }
+                if(StringsAreEqualAB(8, (Ptr), 8, "doc_sig("))
+                {
+                    Assert(!Idx && !ShouldCopy);
+                    ShouldCopy = 1;
+                    DocState = Sig;
+                    Ptr += 8;
+                    //Buffer[Idx++] = *Ptr;
+                }
+                if(StringsAreEqualAB(8, (Ptr), 8, "doc_ret("))
+                {
+                    Assert(!Idx && !ShouldCopy);
+                    ShouldCopy = 1;
+                    DocState = Ret;
+                    Ptr += 8;
+                    //Buffer[Idx++] = *Ptr;
+                }
                 if(*Ptr == '(')
                 {
                     ++ScopeLevel;
                 }
-                if(*Ptr == ')' && ScopeLevel)
+                else if(*Ptr == ')' && ScopeLevel)
                 {
                     --ScopeLevel;
                 }
                 else if((*Ptr == ')') && ShouldCopy)
                 {
-                    Assert(Idx < 256);
+                    Assert(Idx < FileSize);
                     Buffer[Idx] = 0;
                     
                     // NOTE(zaklaus): Handle doc
@@ -110,29 +134,25 @@ main(int argc, char **argv)
                         {
                             fprintf(stdout, "3 %s#", Buffer);
                         }break;
+                        
+                        case Sig:
+                        {
+                            fprintf(stdout, "4 %s#", Buffer);
+                        }break;
+                        
+                        case Ret:
+                        {
+                            fprintf(stdout, "5 %s#", Buffer);
+                        }break;
                     }
                     Idx = 0;
-                    ZeroArray(256, Buffer);
+                    ZeroArray(FileSize, Buffer);
                     *Buffer = 0;
                     ShouldCopy = 0;
                 }
                 if(ShouldCopy)
                 {
-                    if(Ptr - FileData >= 256)
-                    {
-                        size_t Offset = Ptr - FileData - 256;
-                        ZeroArray(256, FileData);
-                        *FileData = 0;
-                        if(fread(FileData, sizeof(char), 256, File))
-                        {
-                            Ptr = FileData + Offset;
-                        }
-                        else 
-                        {
-                            printf("!");
-                            return(0);
-                        }
-                    }
+                    
                     Buffer[Idx++] = *Ptr;
                 }
             }
@@ -141,6 +161,7 @@ main(int argc, char **argv)
             *FileData = 0;
         }
     };
-    printf("!");
+	fclose(File);
+	printf("!");
     return(0);
 }

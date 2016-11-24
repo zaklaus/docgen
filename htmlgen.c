@@ -1,5 +1,7 @@
 // (c) ZaKlaus 2016; All Rights Reserved
 
+#define HANDMADE_SLOW
+
 #include"hftw.h"
 #include<stdio.h>
 
@@ -11,47 +13,31 @@ typedef struct
     memory_arena Name;
     memory_arena Desc;
     memory_arena Expl;
+    memory_arena Sig;
+    memory_arena Ret;
 } doc_elem;
 
 LinkedList(doc_elem)
 
-char * getline(void) {
-    char * line = malloc(100), * linep = line;
-    size_t lenmax = 100, len = lenmax;
-    int c;
-    
-    if(line == NULL)
-        return NULL;
-    
-    for(;;) {
-        c = fgetc(stdin);
-        if(c == EOF)
-            break;
-        
-        if(--len == 0) {
-            len = lenmax;
-            char * linen = realloc(linep, lenmax *= 2);
-            
-            if(linen == NULL) {
-                free(linep);
-                return NULL;
-            }
-            line = linen + (line - linep);
-            linep = linen;
-        }
-        
-        if((*line++ = (char)c) == '\n')
-            break;
-    }
-    *line = '\0';
-    return linep;
+void
+reset_docs(doc_elem *docs)
+{
+    docs->Name.Base = 0;
+    docs->Category.Base = 0;
+    docs->Expl.Base = 0;
+    docs->Desc.Base = 0;
+    docs->Sig.Base = 0;
+    docs->Ret.Base = 0;
 }
 
 int
 main(int argc,const char **argv)
 {
      char *Title = "Generated with docgen!";
+    int TitleLen = 22;
     char *Overview = "<p>Empty</p>";
+    int OverviewLen = 12;
+    char *doc = "0 Empty#!";
     if(argc > 1)
     {
         FILE *Ow = fopen(argv[1], "r");
@@ -59,24 +45,37 @@ main(int argc,const char **argv)
         fseek(Ow, 0, SEEK_END);
         int size = ftell(Ow);
         rewind(Ow);
-         Title= PlatformMemAlloc(sizeof(char)*size+1);
-        fread(Title, sizeof(char), size, Ow);
-        Title[size] = 0;
+        doc= PlatformMemAlloc(sizeof(char)*size+1);
+        fread(doc, sizeof(char), size, Ow);
+        doc[size] = 0;
         fclose(Ow);
     }
     if(argc > 2)
     {
         FILE *Ow = fopen(argv[2], "r");
+        if(!Ow)return(3);
+        fseek(Ow, 0, SEEK_END);
+        int size = ftell(Ow);
+        TitleLen = size;
+        rewind(Ow);
+         Title= PlatformMemAlloc(sizeof(char)*size+1);
+        fread(Title, sizeof(char), size, Ow);
+        Title[size] = 0;
+        fclose(Ow);
+    }
+    if(argc > 3)
+    {
+        FILE *Ow = fopen(argv[3], "r");
         if(!Ow)return(4);
         fseek(Ow, 0, SEEK_END);
         int size = ftell(Ow);
+        OverviewLen = size;
         rewind(Ow);
         Overview = PlatformMemAlloc(sizeof(char)*size);
         fread(Overview, sizeof(char), size, Ow);
         fclose(Ow);
     }
     
-    char *doc = getline();
     Node_doc_elem *Head = 0, *Tail = 0;
     
     // NOTE(zaklaus): Handle doc input
@@ -85,12 +84,7 @@ main(int argc,const char **argv)
         b32 IsNewNode = 1, ShouldEnd = 0;
         doc_elem *docs = PlatformMemAlloc(sizeof(doc_elem)), dummy = {0};
         
-        {
-            docs->Name.Base = 0;
-            docs->Category.Base = 0;
-            docs->Expl.Base = 0;
-            docs->Desc.Base = 0;
-        }
+        reset_docs(docs);
         
         do
         {
@@ -99,7 +93,8 @@ main(int argc,const char **argv)
             if(!Ptr)break;
             
             char C = *Ptr++; Ptr++;
-            char Buffer[1024];
+            char Buffer[1024*128];
+            if(!Ptr)break;
             switch(C)
             {
                 case '!':
@@ -120,7 +115,8 @@ main(int argc,const char **argv)
                         }
                         else
                         {
-                            Tail = AddNode_doc_elem(Tail, *docs);
+                            Tail->Next = NewNode_doc_elem(*docs);
+                            Tail = Tail->Next;
                         }
                         
                         if(ShouldEnd)
@@ -129,14 +125,9 @@ main(int argc,const char **argv)
                         IsNewNode = 1;
                         docs = PlatformMemAlloc(sizeof(doc_elem));
                         
-                        {
-                            docs->Name.Base = 0;
-                            docs->Category.Base = 0;
-                            docs->Expl.Base = 0;
-                            docs->Desc.Base = 0;
-                        }
+                        reset_docs(docs);
                     }
-                    else IsNewNode = 0;
+                    IsNewNode = 0;
                     
                     s32 Size = 0;
                     do
@@ -146,8 +137,8 @@ main(int argc,const char **argv)
                     }
                     while(Ptr && *++Ptr != '#');
                     
-                      
                     ArenaBuild(&docs->Name, Size);
+                    docs->Name.Flags = ArenaFlag_AllowRealloc;
                     ArenaPushAndNullTerminate(&docs->Name, Size, Buffer);
                 }break;
                 case '1':
@@ -161,6 +152,7 @@ main(int argc,const char **argv)
                     while(Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Desc, Size);
+                    docs->Desc.Flags = ArenaFlag_AllowRealloc;
                     ArenaPushAndNullTerminate(&docs->Desc, Size, Buffer);
                 }break;
                 
@@ -175,6 +167,7 @@ main(int argc,const char **argv)
                     while(Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Expl, Size);
+                    docs->Expl.Flags = ArenaFlag_AllowRealloc;
                     ArenaPushAndNullTerminate(&docs->Expl, Size, Buffer);
                 }break;
                 
@@ -189,22 +182,59 @@ main(int argc,const char **argv)
                     while(Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Category, Size);
+                    docs->Category.Flags = ArenaFlag_AllowRealloc;
                     ArenaPushAndNullTerminate(&docs->Category, Size, Buffer);
+                }break;
+                
+                case '4':
+                {
+                    s32 Size = 0;
+                    do
+                    {
+                        Buffer[Size] = *Ptr;
+                        ++Size;
+                    }
+                    while(Ptr && *++Ptr != '#');
+                    
+                    ArenaBuild(&docs->Sig, Size);
+                    docs->Sig.Flags = ArenaFlag_AllowRealloc;
+                    ArenaPushAndNullTerminate(&docs->Sig, Size, Buffer);
+                }break;
+                
+                case '5':
+                {
+                    s32 Size = 0;
+                    do
+                    {
+                        Buffer[Size] = *Ptr;
+                        ++Size;
+                    }
+                    while(Ptr && *++Ptr != '#');
+                    
+                    ArenaBuild(&docs->Ret, Size);
+                    docs->Ret.Flags = ArenaFlag_AllowRealloc;
+                    ArenaPushAndNullTerminate(&docs->Ret, Size, Buffer);
                 }break;
             }
         }
         while(Ptr);
     }
     html:
+    
+    char *Style = "body{background-color:#f5f5f5;font-family:sans-serif}.Page{width:800px;margin:0 auto}p{font-size:15px;line-height:.4}h1,h2{color:green}a{text-decoration:none;color:green}a:hover{background-color:#faebd7}ul{list-style:none}pre{font-family:monospace;background-color:#fdf5e6;padding:10px;border:1px solid grey}table{border:1px solid grey;background-color:#fdf5e6;border-collapse:collapse}tr{border-bottom:1px solid grey}th{text-align:left;background-color:#ffe4c4;padding:5px;border-right:1px solid grey}td{padding:5px;border-right:1px solid grey}";
+    
     // NOTE(zaklaus): HTML
     {
         printf("<html>");
         // NOTE(zaklaus): HEAD
         {
+            printf("<head>");
             // NOTE(zaklaus): TITLE
             {
-                printf("<title>%s</title>", Title);
+                printf("<title>%.*s</title>", TitleLen, Title);
+                printf("<style>%s</style>", Style);
             }
+            printf("</head>");
         }
          u8 *CategId = 0;
         
@@ -219,7 +249,7 @@ main(int argc,const char **argv)
                 {
                     printf("<div class=\"Overview\">");
                     printf("<h1>$ Overview</h1>");
-                    printf("%s", Overview);
+                    printf("%.*s", OverviewLen, Overview);
                     printf("</div>");
                 }
                 
@@ -239,7 +269,7 @@ main(int argc,const char **argv)
                                 CategId = E->Value.Category.Base;
                                 printf("<h2>%s</h2>", E->Value.Category.Base);
                             }
-                            printf("<li> <a href=\"#%s\">%s</a></li>", E->Value.Name.Base, E->Value.Name.Base);
+                            printf("<li> <a href=\"#%s\">%s</a> &nbsp; <small>%s</small></li>", E->Value.Name.Base, E->Value.Name.Base, E->Value.Desc.Base);
                         }
                     }
                     
@@ -265,9 +295,14 @@ main(int argc,const char **argv)
                             
                                 // NOTE(zaklaus): DOC
                             {
-                                printf("<div id=\"%s\" class\"doc\">", E->Value.Name.Base);
+                                printf("<div id=\"%s\" class=\"doc\">", E->Value.Name.Base);
                                 
                                 printf("<h2>%s</h2>", E->Value.Name.Base);
+                                
+                                if(E->Value.Sig.Base)
+                                {
+                                    printf("<pre>%s</pre>", E->Value.Sig.Base);
+                                }
                                 
                                 if(E->Value.Desc.Base)
                                 {
@@ -277,6 +312,11 @@ main(int argc,const char **argv)
                                 if(E->Value.Expl.Base)
                                 {
                                     printf("<b>Example:</b> <code>%s</code>",E->Value.Expl.Base);
+                                }
+                                
+                                if(E->Value.Ret.Base)
+                                {
+                                    printf("<p><b>Returns:</b> <i>%s</i></p>",E->Value.Ret.Base);
                                 }
                                 
                                 printf("</div>");
