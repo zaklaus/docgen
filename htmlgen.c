@@ -258,7 +258,7 @@ main(int argc,const char **argv)
                     printf("<h1>$ Index</h1>");
                     printf("<ul>");
                     
-                    // TODO(zaklaus): CATEGORY
+                    // NOTE(zaklaus): CATEGORY
                     {
                         for(Node_doc_elem *E = Head->Next;
                             E;
@@ -278,10 +278,10 @@ main(int argc,const char **argv)
                 
                 // NOTE(zaklaus): CONTENT
                 {
-                    printf("<h1>$ Index</h1>");
+                    printf("<h1>$ Content</h1>");
                     printf("<ul>");
                     
-                    // TODO(zaklaus): CATEGORY
+                    // NOTE(zaklaus): CATEGORY
                     {
                         for(Node_doc_elem *E = Head->Next;
                             E;
