@@ -15,6 +15,7 @@ typedef struct
     memory_arena Expl;
     memory_arena Sig;
     memory_arena Ret;
+    b32 Separate;
 } doc_elem;
 
 LinkedList(doc_elem)
@@ -28,6 +29,7 @@ reset_docs(doc_elem *docs)
     docs->Desc.Base = 0;
     docs->Sig.Base = 0;
     docs->Ret.Base = 0;
+    docs->Separate = 0;
 }
 
 int
@@ -215,6 +217,11 @@ main(int argc,const char **argv)
                     docs->Ret.Flags = ArenaFlag_AllowRealloc;
                     ArenaPushAndNullTerminate(&docs->Ret, Size, Buffer);
                 }break;
+                
+                case '6':
+                {
+                    docs->Separate = 1;
+                }break;
             }
         }
         while(Ptr);
@@ -270,6 +277,10 @@ main(int argc,const char **argv)
                                 printf("<h2>%s</h2>", E->Value.Category.Base);
                             }
                             printf("<li> <a href=\"#%s\">%s</a> &nbsp; <small>%s</small></li>", E->Value.Name.Base, E->Value.Name.Base, E->Value.Desc.Base);
+                            if(E->Value.Separate)
+                            {
+                                printf("<br>");
+                            }
                         }
                     }
                     

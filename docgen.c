@@ -12,6 +12,7 @@ typedef enum
     Categ,
     Sig,
     Ret,
+    Sep,
 } Doc_States;
 
 int
@@ -99,6 +100,14 @@ main(int argc, char **argv)
                     Ptr += 8;
                     //Buffer[Idx++] = *Ptr;
                 }
+                if(StringsAreEqualAB(8, (Ptr), 8, "doc_sep("))
+                {
+                    Assert(!Idx && !ShouldCopy);
+                    ShouldCopy = 1;
+                    DocState = Sep;
+                    Ptr += 8;
+                    //Buffer[Idx++] = *Ptr;
+                }
                 if(*Ptr == '(')
                 {
                     ++ScopeLevel;
@@ -143,6 +152,11 @@ main(int argc, char **argv)
                         case Ret:
                         {
                             fprintf(stdout, "5 %s#", Buffer);
+                        }break;
+                        
+                        case Sep:
+                        {
+                            fprintf(stdout, "6#");
                         }break;
                     }
                     Idx = 0;

@@ -35,6 +35,8 @@ typedef struct
 } memory_arena;
 )
 
+doc_sep()
+
 doc(arena_flags)
 doc_string(Arena flags.)
 doc_sig(
