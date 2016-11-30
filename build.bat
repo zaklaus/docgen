@@ -1,2 +1,2 @@
 @echo off
-msvc.bat htmlgen.c
+msvc.bat docgen.c "/O2"

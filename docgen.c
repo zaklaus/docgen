@@ -42,6 +42,7 @@ main(int argc, char **argv)
         Buffer = PlatformMemAlloc(FileSize);
         FileData = PlatformMemAlloc(FileSize);
         size_t Line = 3;
+        b32 Ignore = 0;
         
         while(fread(FileData, sizeof(char), FileSize, File))
         {
@@ -52,6 +53,19 @@ main(int argc, char **argv)
             u8 ScopeLevel = 0;
             do
             {
+                if(Ignore)
+                {
+                    if(StringsAreEqualAB(9, (Ptr), 9, "doc_hunt("))
+                    {
+                        Ignore = 0;
+                        Ptr += 9;
+                        //Buffer[Idx++] = *Ptr;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
                 if(StringsAreEqualAB(4, (Ptr), 4, "doc("))
                 {
                     Assert(!Idx && !ShouldCopy);
@@ -65,6 +79,12 @@ main(int argc, char **argv)
                     Assert(!Idx && !ShouldCopy);
                     ShouldCopy = 1;
                     DocState = Desc;
+                    Ptr += 11;
+                    //Buffer[Idx++] = *Ptr;
+                }
+                if(StringsAreEqualAB(11, (Ptr), 11, "doc_ignore("))
+                {
+                    Ignore = 1;
                     Ptr += 11;
                     //Buffer[Idx++] = *Ptr;
                 }
@@ -176,6 +196,6 @@ main(int argc, char **argv)
         }
     };
 	fclose(File);
-	printf("!");
+	//printf("!");
     return(0);
 }

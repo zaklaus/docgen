@@ -40,6 +40,7 @@ main(int argc,const char **argv)
     char *Overview = "<p>Empty</p>";
     int OverviewLen = 12;
     char *doc = "0 Empty#!";
+    int DataLen = 10;
     if(argc > 1)
     {
         FILE *Ow = fopen(argv[1], "r");
@@ -50,6 +51,7 @@ main(int argc,const char **argv)
         doc= PlatformMemAlloc(sizeof(char)*size+1);
         fread(doc, sizeof(char), size, Ow);
         doc[size] = 0;
+        DataLen = size;
         fclose(Ow);
     }
     if(argc > 2)
@@ -75,6 +77,7 @@ main(int argc,const char **argv)
         rewind(Ow);
         Overview = PlatformMemAlloc(sizeof(char)*size);
         fread(Overview, sizeof(char), size, Ow);
+        Overview[size] = 0;
         fclose(Ow);
     }
     
@@ -95,15 +98,14 @@ main(int argc,const char **argv)
             if(!Ptr)break;
             
             char C = *Ptr++; Ptr++;
-            char Buffer[1024*128];
-            if(!Ptr)break;
+            char *Buffer = PlatformMemAlloc(DataLen);
+            if(!*Ptr)
+            {
+                ShouldEnd = 1;
+                goto node_decl;
+            }
             switch(C)
             {
-                case '!':
-                {
-                    ShouldEnd = 1;
-                    goto node_decl;
-                }break;
                 case '0':
                 {
                     if(!IsNewNode)
@@ -137,7 +139,7 @@ main(int argc,const char **argv)
                         Buffer[Size] = *Ptr;
                         ++Size;
                     }
-                    while(Ptr && *++Ptr != '#');
+                    while(*Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Name, Size);
                     docs->Name.Flags = ArenaFlag_AllowRealloc;
@@ -151,7 +153,7 @@ main(int argc,const char **argv)
                         Buffer[Size] = *Ptr;
                         ++Size;
                     }
-                    while(Ptr && *++Ptr != '#');
+                    while(*Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Desc, Size);
                     docs->Desc.Flags = ArenaFlag_AllowRealloc;
@@ -166,7 +168,7 @@ main(int argc,const char **argv)
                         Buffer[Size] = *Ptr;
                         ++Size;
                     }
-                    while(Ptr && *++Ptr != '#');
+                    while(*Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Expl, Size);
                     docs->Expl.Flags = ArenaFlag_AllowRealloc;
@@ -181,7 +183,7 @@ main(int argc,const char **argv)
                         Buffer[Size] = *Ptr;
                         ++Size;
                     }
-                    while(Ptr && *++Ptr != '#');
+                    while(*Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Category, Size);
                     docs->Category.Flags = ArenaFlag_AllowRealloc;
@@ -196,7 +198,7 @@ main(int argc,const char **argv)
                         Buffer[Size] = *Ptr;
                         ++Size;
                     }
-                    while(Ptr && *++Ptr != '#');
+                    while(*Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Sig, Size);
                     docs->Sig.Flags = ArenaFlag_AllowRealloc;
@@ -211,7 +213,7 @@ main(int argc,const char **argv)
                         Buffer[Size] = *Ptr;
                         ++Size;
                     }
-                    while(Ptr && *++Ptr != '#');
+                    while(*Ptr && *++Ptr != '#');
                     
                     ArenaBuild(&docs->Ret, Size);
                     docs->Ret.Flags = ArenaFlag_AllowRealloc;
@@ -224,7 +226,7 @@ main(int argc,const char **argv)
                 }break;
             }
         }
-        while(Ptr);
+        while(*Ptr);
     }
     html:
     
