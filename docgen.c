@@ -191,8 +191,6 @@ main(int argc, char **argv)
                 }
             }
             while(*Ptr++);
-            ZeroArray(256, FileData);
-            *FileData = 0;
         }
     };
 	fclose(File);

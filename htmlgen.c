@@ -49,9 +49,8 @@ main(int argc,const char **argv)
         int size = ftell(Ow);
         rewind(Ow);
         doc= PlatformMemAlloc(sizeof(char)*size+1);
-        fread(doc, sizeof(char), size, Ow);
-        doc[size] = 0;
-        DataLen = size;
+        DataLen = (int)fread(doc, sizeof(char), size, Ow);
+        doc[DataLen] = 0;
         fclose(Ow);
     }
     if(argc > 2)
@@ -60,11 +59,10 @@ main(int argc,const char **argv)
         if(!Ow)return(3);
         fseek(Ow, 0, SEEK_END);
         int size = ftell(Ow);
-        TitleLen = size;
         rewind(Ow);
          Title= PlatformMemAlloc(sizeof(char)*size+1);
-        fread(Title, sizeof(char), size, Ow);
-        Title[size] = 0;
+        TitleLen = (int)fread(Title, sizeof(char), size, Ow);
+        Title[TitleLen] = 0;
         fclose(Ow);
     }
     if(argc > 3)
@@ -73,11 +71,10 @@ main(int argc,const char **argv)
         if(!Ow)return(4);
         fseek(Ow, 0, SEEK_END);
         int size = ftell(Ow);
-        OverviewLen = size;
         rewind(Ow);
-        Overview = PlatformMemAlloc(sizeof(char)*size);
-        fread(Overview, sizeof(char), size, Ow);
-        Overview[size] = 0;
+        Overview = PlatformMemAlloc(sizeof(char)*size+1);
+        OverviewLen = (int)fread(Overview, sizeof(char), size, Ow);
+        Overview[OverviewLen] = 0;
         fclose(Ow);
     }
     
@@ -230,7 +227,7 @@ main(int argc,const char **argv)
     }
     html:
     
-    char *Style = "body{background-color:#f5f5f5;font-family:sans-serif}.Page{width:800px;margin:0 auto}p{font-size:15px;line-height:.4}h1,h2{color:green}a{text-decoration:none;color:green}a:hover{background-color:#faebd7}ul{list-style:none}pre{font-family:monospace;background-color:#fdf5e6;padding:10px;border:1px solid grey}table{border:1px solid grey;background-color:#fdf5e6;border-collapse:collapse}tr{border-bottom:1px solid grey}th{text-align:left;background-color:#ffe4c4;padding:5px;border-right:1px solid grey}td{padding:5px;border-right:1px solid grey}";
+    char *Style = "body{background-color:#f5f5f5;font-family:sans-serif}.Page{width:800px;margin:0 auto}p{font-size:15px}h1,h2{color:green}a{text-decoration:none;color:green}a:hover{background-color:#faebd7}ul{list-style:none}pre{font-family:monospace;background-color:#fdf5e6;padding:10px;border:1px solid grey}table{border:1px solid grey;background-color:#fdf5e6;border-collapse:collapse}tr{border-bottom:1px solid grey}th{text-align:left;background-color:#ffe4c4;padding:5px;border-right:1px solid grey}td{padding:5px;border-right:1px solid grey}";
     
     // NOTE(zaklaus): HTML
     {

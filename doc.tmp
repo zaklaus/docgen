@@ -1,2 +1,47 @@
-0 ArenaGetAlignmentOffset#3 Memory Arena#1 
-Calculates the offset required by specified alignment.#2 ArenaGetAlignmentOffset(Arena, 8);#4 inline memory_indexArenaGetAlignmentOffset(memory_arena *Arena, memory_index Alignment)#0 ArenaDefaultParams#3 Test Category#1 Returns default push state params.#!
+3 Memory Arena#0 arena_header#1 Describes arena elements.#4 
+typedef struct
+{
+    s32 Size;    // Size of the element.
+    u32 Tag;     // Element's tag used for identification.
+    u32 Offset;  // Memory offset from the base.
+} arena_header;
+#0 memory_arena#1 Memory arena holding contigous block of memory and tracking of pushed objects.#4 
+typedef struct
+{
+    memory_index Size;             // Allocated memory size. 
+    uint8 *Base;                   // Memory base pointer. Points to a contigous block of memory.
+    memory_index Used;             // Memory already used by elements.
+    u8 Flags;                      // Arena's flags.
+    b32 WasExpanded;               // If reallocation is allowed, this signals us whether memory expansion has happened.
+
+    s32 TempCount;                 // Counts how many times is our arena used by temp_memory.
+    
+    Node_arena_header *Header;    // Linked list of tracked elements.
+    Node_arena_header *HeaderEnd;
+} memory_arena;
+#6#0 arena_flags#1 Arena flags.#4 
+typedef enum
+{
+    ArenaFlag_AllowRealloc = 0x1,    // Allows re-allocation of the memory, if expansion is required.
+    ArenaFlag_DisallowHeaders = 0x2, // Disallows tracking of elements. Useful if elements are of uniform size.
+} arena_flags;
+#0 temp_memory#1 Used to temporarily store short-living data in arena.#4 
+typedef struct
+{
+    memory_arena *Arena;  // Memory Arena to be used.
+    memory_index Used;    // This holds the Arena's original used size.
+} temp_memory;
+#0 ArenaInitialize#1 Initializes Memory Arena with default values.#2 ArenaInitialize(Arena, 128, MemBlock);#4 
+inline void
+ArenaInitialize(memory_arena *Arena, // Arena to be initialized.
+                memory_index Size,   // Size of the allocated memory.
+                void *Base)          // Memory block to be used with Arena.
+#0 ArenaBuild#1 Uses internal allocator to build new arena.#2 ArenaBuild(Arena, 128);#4 
+inline void
+ArenaBuild(memory_arena *Arena, // Arena to be built.
+           memory_index Size)   // The size to be pre-allocated.
+#0 ArenaGetAlignmentOffset#1 Calculates the offset required by specified alignment.#2 ArenaGetAlignmentOffset(Arena, 8);#4 
+inline memory_index
+ArenaGetAlignmentOffset(memory_arena *Arena,     // Target Arena.
+                        memory_index Alignment)  // Desired alignment
+#0 ArenaDefaultParams#1 Returns default push state params.#
