@@ -112,6 +112,7 @@ main(int argc, char **argv)
                     ShouldCopy = 1;
                     DocState = Sig;
                     Ptr += 9;
+                    ExpectBrace = 1;
                     //Buffer[Idx++] = *Ptr;
                 }
                 if(StringsAreEqualAB(8, (Ptr), 8, "typedef "))
@@ -120,7 +121,6 @@ main(int argc, char **argv)
                     ShouldCopy = 1;
                     DocState = Sig;
                     Ptr += 8;
-                    ExpectBrace = 1;
                     //Buffer[Idx++] = *Ptr;
                 }
                 if(StringsAreEqualAB(8, (Ptr), 8, "doc_ret("))
@@ -143,7 +143,7 @@ main(int argc, char **argv)
                 {
                     ++ScopeLevel;
                 }
-                if(*Ptr == '{' && ExpectBrace)
+                if(*Ptr == '{' && !ExpectBrace)
                 {
                     ++ScopeLevel;
                     ExpectBrace = 0;

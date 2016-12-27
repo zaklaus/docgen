@@ -1,159 +1,195 @@
-0 arena_header#1 Describes arena elements.#3 Memory Arena#4 struct
+0 vec2#1 2-sized vector. Alias: v2#3 Math [Unfinished]#4 union vec2
 {
-    s32 Size;    // Size of the element.
-    u32 Tag;     // Element's tag used for identification.
-    u32 Offset;  // Memory offset from the base.
-    b32 IsFree;  // Is this node free for use?
-} arena_header#0 memory_arena#1 Memory arena holding contigous block of memory and tracking of pushed objects.#4 struct
-{
-    memory_index Size;             // Allocated memory size. 
-    uint8 *Base;                   // Memory base pointer. (Points to a contigous block of memory.)
-    memory_index Used;             // Memory already used by elements.
-    u8 Flags;                      // Arena's flags.
-    b32 WasExpanded;               // If reallocation is allowed, this signals us whether memory expansion has happened.
+    struct
+    {
+        real32 X, Y;
+    };
 
-    s32 TempCount;                 // Counts how many times is our arena used by temp_memory.
-    s32 NodeCount;                 // Counts how many nodes do we track in our arena header.
-    
-    Node_arena_header *Header;     // Linked list of tracked elements.
-    Node_arena_header *HeaderEnd;
-} memory_arena#0 arena_flags#1 Arena flags.#4 enum
+    struct
+    {
+        real32 U, V;
+    };
+
+    struct
+    {
+        real32 Left, Right;
+    };
+
+    real32 Elements[2];
+} vec2#0 vec3#1 3-sized vector. Alias: v3#4 union vec3
 {
-    ArenaFlag_AllowRealloc = (1 << 1),    // Allows re-allocation of the memory, if expansion is required.
-    ArenaFlag_DisallowHeaders = (1 << 2), // Disallows tracking of elements. Useful if elements are of uniform size. This also disables Arena memory reuse.
-    ArenaFlag_DisallowReuse = (1 << 3),   // Disallows the ability to reuse freed memory in arena.
-} arena_flags#0 temp_memory#1 Used to temporarily store short-living data in arena.#4 struct
+    struct
+    {
+        real32 X, Y, Z;
+    };
+
+    struct
+    {
+        real32 U, V, W;
+    };
+
+    struct
+    {
+        real32 R, G, B;
+    };
+
+    struct
+    {
+        vec2 XY;
+        real32 Ignored0_;
+    };
+
+    struct
+    {
+        real32 Ignored1_;
+        vec2 YZ;
+    };
+
+    struct
+    {
+        vec2 UV;
+        real32 Ignored2_;
+    };
+
+    struct
+    {
+        real32 Ignored3_;
+        vec2 VW;
+    };
+
+    real32 Elements[3];
+} vec3#0 vec4#1 4-sized vector. Alias: v4#4 union vec4
 {
-    memory_arena *Arena;  // Memory Arena to be used.
-    memory_index Used;    // This holds the Arena's original used size.
-} temp_memory#0 arena_push_flag#1 Push flags used by arena allocator.#4 enum
+    struct
+    {
+        union
+        {
+            vec3 XYZ;
+            struct
+            {
+                real32 X, Y, Z;
+            };
+        };
+
+        real32 W;
+    };
+    struct
+    {
+        union
+        {
+            vec3 RGB;
+            struct
+            {
+                real32 R, G, B;
+            };
+        };
+
+        real32 A;
+    };
+
+    struct
+    {
+        vec2 XY;
+        real32 Ignored0_;
+        real32 Ignored1_;
+    };
+
+    struct
+    {
+        real32 Ignored2_;
+        vec2 YZ;
+        real32 Ignored3_;
+    };
+
+    struct
+    {
+        real32 Ignored4_;
+        real32 Ignored5_;
+        vec2 ZW;
+    };
+
+    real32 Elements[4];
+} vec4#0 mat4#1 4x4 Matrix. Alias: m4#4 union mat4
 {
-    ArenaPushFlag_ClearToZero = 0x1,  // Tell the allocator to clear allocated memory.
-} arena_push_flag#0 arena_push_params#1 Params used by allocator for customized allocation procedure.#4 struct
-{
-    u32 Flags;        // Specifies push flags. @see arena_push_flag
-    u32 Alignment;    // Specifies memory alignment requirements.
-    u32 Expectation;  // This tells the allocator to check whether we have enough reserved memory up-front.
-    u32 Tag;          // Tag used for identification in pushed element.
-} arena_push_params#0 tag_scan_result#1 Holds pointer to current element found by specified tag identification.#4 struct
-{
-    u8 *Value;                // Pointer to memory tagged by identification.
-    Node_arena_header *Node;  // Pointer to found element.
-} tag_scan_result#6#0 ArenaGetBlock#1 Returns block of memory pointed to by index. *NOTE* Works only with arena`s elements of uniform size!#2 (Type *) ArenaGetBlock(Arena, Type, Index)#0 ArenaGetVaryBlock#1 Returns element by index.#2 (Type *) ArenaGetVaryBlock(Arena, Type, Index)#0 ArenaGetVaryBlockTagValue#1 Returns element`s value by tag.#2 (Type *) ArenaGetVaryBlockTagValue(Arena, Scan, Type, Tag)#0 ArenaGetVaryBlockTagResult#1 Returns tag scan result by tag.#2 tag_scan_result ArenaGetVaryBlockTagResult(Arena, Scan, Tag)#0 ArenaPushStruct#1 Push struct to the arena.#2 (Type *) ArenaPushStruct(Arena, Type, ...)#0 ArenaPushArray#1 Push array to the arena.#2 (Type *) ArenaPushArray(Arena, Count, Type, ...)#0 ArenaPushSize#1 Push size to the arena.#2 (void *) ArenaPushSize(Arena, Size, ...)#0 ArenaPushCopy#1 Push and copy size from the source.#2 (void *) ArenaPushCopy(Arena, Size, Source, ...)#0 ArenaPushValue#1 Push and set value to the arena.#2 (none) 
-            ArenaPushValue(Arena, Type, Value, ...)#6#0 ArenaDefaultTagScan#1 Default scan setup for new scans.#4 tag_scan_result
-ArenaDefaultTagScan(void)
-#0 ArenaInitialize#1 Initializes Memory Arena with default values.#2 ArenaInitialize(Arena, 128, MemBlock)#4 void
-ArenaInitialize(memory_arena *Arena, // Arena to be initialized.
-                memory_index Size,   // Size of the allocated memory.
-                void *Base)          // Memory block to be used with Arena.
-#0 ArenaBuild#2 Uses allocator to build new arena.)
-ArenaBuild(Arena, 128)#4 void
-ArenaBuild(memory_arena *Arena, // Arena to be built.
-           memory_index Size)   // The size to be pre-allocated.
-#0 ArenaGetAlignmentOffset#1 Calculates the offset required by specified alignment.#2 ArenaGetAlignmentOffset(Arena, 8)#4 memory_index
-ArenaGetAlignmentOffset(memory_arena *Arena,     // Target Arena.
-                        memory_index Alignment)  // Desired alignment
-#0 ArenaDefaultParams#1 Returns default push state params.#4 arena_push_params
-ArenaDefaultParams(void)
-#0 ArenaAlignNoClear#1 Returns alignment arena push params without clear flag.#4 arena_push_params
-ArenaAlignNoClear(
-u32 Alignment)      // Memory alignment we require during allocation.
-#0 ArenaAlign#1 Returns alignment arena push params.#4 arena_push_params
-ArenaAlign(u32 Alignment, // Memory alignment we require during allocation.
-           b32 Clear)     // Should allocator clear allocated memory?
-#0 ArenaNoClear#1 Returns arena push params without clear flag.#4 arena_push_params
-ArenaNoClear(void)
-#0 ArenaExpect#1 Returns arena push params with expected reserves.#4 arena_push_params
-ArenaExpect(u32 Expectation, // Expected memory to be in reserves.
-            b32 Clear)       // Should allocator clear allocated memory?
-#0 ArenaAlignExpect#1 Returns arena push params with expected reserves and alignment.#4 arena_push_params
-ArenaAlignExpect(u32 Alignment,   // Memory alignment we require during allocation.
-                 u32 Expectation, // Expected memory to be in reserves.
-                 b32 Clear)       // Should allocator clear allocated memory?
-#0 ArenaTag#1 Returns arena push params with tag property.#4 arena_push_params
-ArenaTag(u32 Tag,                 // Tag used for element lookup.
-         arena_push_params Rest)  // Rest of the push params. @see arena_push_params
-#0 ArenaGetSizeRemaining#1 Returns the remaining unused space size in arena.#4 memory_index
-ArenaGetSizeRemaining(memory_arena *Arena,      // Target arena
-                      arena_push_params Params) // Params to be used during the procedure.
-#0 ArenaGetBlockByRecord#1 Returns block of memory pointed to by index.#4 void *
-ArenaGetBlockByRecord(memory_arena *Arena, // Target arena
-                      size_t Index)        // Element index
-#0 ArenaGetBlockByTagAndRecord#1 Returns tag scan result based on specified tag.#4 tag_scan_result
-ArenaGetBlockByTagAndRecord(memory_arena *Arena,  // Target arena
-                            tag_scan_result scan, // Previous scan result. (Or DefaultTagScan if none. @see DefaultTagScan)
-                            u32 Tag)              // Tag used for lookup.
-#0 ArenaGetEffectiveSizeFor#1 Returns effective size based on push params for specified initial size.#4 memory_index
-ArenaGetEffectiveSizeFor(memory_arena *Arena,      // Target arena
-                         memory_index SizeInit,    // Initial size required by callee.
-                         arena_push_params Params) // Params to be used during the procedure.
-#0 ArenaHasRoomFor#1 Returns truth value determining whether we have enough space in our arena depending on initial size requirements and push params.#4 b32
-ArenaHasRoomFor(memory_arena *Arena,       // Target arena
-                memory_index SizeInit,     // Initial size required by callee.
-                arena_push_params Params)  // Params to be used during the procedure.
-#0 ArenaExpand#1 Expands the arena if the requested size can`t make it into our arena.#4 void
-ArenaExpand(memory_arena *Arena, // Our arena.
-            memory_index Size)   // The requested size.
-#4 void *
-ArenaReuseMem(memory_arena *Arena,
-              memory_index Size,
-              b32 *IsReused,
-              arena_push_params Params)
-#0 ArenaPushSize_#1 Asks our arena for plotting a block of memory determined by initial size and params requirements.#4 void *
-ArenaPushSize_(memory_arena *Arena,         // Target arena
-               memory_index SizeInit,       // Initial size required by callee.
-               arena_push_params Params)    // Params to be used during the procedure.
-#0 ArenaPushString#1 Pushes null-terminated string to the arena.#4 char *
-ArenaPushString(memory_arena *Arena, // Target arena
-                const char *Source)  // String source
-#0 ArenaPushAndNullTerminate#1 Pushes string of specified size to the arena and additionally null-terminates it.#4 char *
-ArenaPushAndNullTerminate(memory_arena *Arena, // Target arena
-                          u32 Length,          // String length
-                          const char *Source)  // String source
-#0 ArenaBeginTemporaryMemory#1 Tells our arena we plan to store temporary memory in it.#4 temp_memory
-ArenaBeginTemporaryMemory(
-memory_arena *Arena) // Target arena
-#0 ArenaEndTemporaryMemory#1 Tells our arena we`re done serving temporary memory and resets it back to its original state.#4 void
-ArenaEndTemporaryMemory(
-temp_memory TempMem) // Structure holding our arena's pointer and originally used size. @see temp_memory
-#0 ArenaClear#1 Clears the whole arena.#4 void
-ArenaClear(
-memory_arena *Arena) // Target arena
-#0 ArenaCheck#1 Checks whether our arena is still holding temporary data.#4 void
-ArenaCheck(memory_arena *Arena)
-#0 ArenaSub#1 Creates sub-arena inside of our arena, with specified size and push params.#4 void
-ArenaSub(memory_arena *Result,     // Target SubArena
-         memory_arena *Arena,      // Target Arena
-         memory_index Size,        // Initial size required by callee.
-         arena_push_params Params) // Params to be used during the procedure.
-#0 ArenaCleanUnusedRoom#1 Clean unused reserved space in our arena.#4 void
-ArenaCleanUnusedRoom(
-memory_arena * Arena) // Target arena
-#0 ArenaFree#1 Deallocate our arena.#4 void
-ArenaFree(
-memory_arena * Arena) // Target arena
-#0 ArenaSerialize#1 Serializes our arena#5 Returns serialized data.#4 u8 *
-ArenaSerialize(
-memory_arena * Arena, // Arena to be serialized.
- size_t * Size)         // Size of the serialized data.
-#0 ArenaDeserialize#1 Deserializes our packed data to our new arena.#4 void
-ArenaDeserialize(
-memory_arena * Arena, // Our new arena to be used for unpacking.
-u8 * Data)            // Source of our serialized data.
-#0 ArenaDuplicate#1 Duplicates our arena.#4 void
-ArenaDuplicate(
-memory_arena * A, // Arena to be duplicated.
-memory_arena * B) // Arena to duplicate to.
-#4 void
-ArenaFreeBlockID(
-memory_arena *Arena,
-mi Idx)
-#4 void
-ArenaFreeBlockTag(
-memory_arena *Arena,
-u32 Tag)
-#4 void
-ArenaFreeBlockID(
-memory_arena *Arena,
-mi Idx)
+    real32 Elements[4][4];
+} mat4#4 vec2 v2#4 vec3 v3#4 vec4 v4#4 mat4 m4#0 MathToRadians#1 Convert Degree value to Radians.#4 real32
+MathToRadians(real32 Degrees)
+#0 MathInner#1 Calculates scalar value from 2 vectors.#4 real32
+MathInner(vec3 A, vec3 B)
+#0 MathSquareRoot#1 Calculates the 2th square root of value.#4 real32
+MathSquareRoot(real32 Float)
+#0 MathLengthSquareRoot#1 Calculates the length of a square root.#4 real32
+MathLengthSquareRoot(vec3 A)
+#0 MathFastInverseSquareRoot#1 Calculates inverse square root of value.#4 real32
+MathFastInverseSquareRoot(real32 Number)
+#0 MathLength#1 Calculates the length of vector.#4 real32
+MathLength(vec3 A)
+#0 MathPower#1 Calculates the power of E for value.#4 real32
+MathPower(real32 Base, int Exponent)
+#0 MathLerp#1 Calculates linear interpolation between 2 values by given time.#4 real32
+MathLerp(real32 A, real32 Time, real32 B)
+#0 MathClamp#1 Clamps the value between Minima/Maxima.#4 real32
+MathClamp(real32 Min, real32 Value, real32 Max)
+#0 MathNormalize#1 Returns normalized vector.#4 vec3
+MathNormalize(vec3 A)
+#0 MathCross#1 Calculates the cross product of 2 vectors.#4 vec3
+MathCross(vec3 VecOne, vec3 VecTwo)
+#0 MathDot#1 Calculates the dot product of 2 vectors.#4 real32
+MathDot(vec3 VecOne, vec3 VecTwo)
+#4 vec2
+MathVec2(real32 X, real32 Y)
+#4 vec2
+MathVec2i(int X, int Y)
+#4 vec3
+MathVec3(real32 X, real32 Y, real32 Z)
+#4 vec3
+MathVec3i(int X, int Y, int Z)
+#4 vec4
+MathVec4(real32 X, real32 Y, real32 Z, real32 W)
+#4 vec4
+MathVec4i(int X, int Y, int Z, int W)
+#4 vec2
+MathAddVec2(vec2 Left, vec2 Right)
+#4 vec3
+MathAddVec3(vec3 Left, vec3 Right)
+#4 vec4
+MathAddVec4(vec4 Left, vec4 Right)
+#4 vec2
+MathSubtractVec2(vec2 Left, vec2 Right)
+#4 vec3
+MathSubtractVec3(vec3 Left, vec3 Right)
+#4 vec4
+MathSubtractVec4(vec4 Left, vec4 Right)
+#4 vec2
+MathMultiplyVec2(vec2 Left, vec2 Right)
+#4 vec3
+MathMultiplyVec3(vec3 Left, vec3 Right)
+#4 vec4
+MathMultiplyVec4(vec4 Left, vec4 Right)
+#4 vec2
+MathDivideVec2(vec2 Left, vec2 Right)
+#4 vec3
+MathDivideVec3(vec3 Left, vec3 Right)
+#4 vec4
+MathDivideVec4(vec4 Left, vec4 Right)
+#4 mat4
+MathMat4()
+#4 mat4
+MathMat4d(real32 Diagonal)
+#4 mat4
+MathMultiplyMat4(mat4 Left, mat4 Right)
+#4 vec4
+MathMultiplyMat4ByVec4(mat4 Matrix, vec4 Vector)
+#4 mat4
+MathOrthographic(real32 Left, real32 Right, real32 Bottom, real32 Top, real32 Near, real32 Far)
+#4 mat4
+MathPerspective(real32 FOV, real32 AspectRatio, real32 Near, real32 Far)
+#4 mat4
+MathTranslate(vec3 Translation)
+#4 mat4
+MathRotate(real32 Angle, vec3 Axis)
+#4 mat4
+MathLookAt(vec3 Eye, vec3 Center, vec3 Up)
+#4 mat4
+MathScale(vec3 Scale)
 #
