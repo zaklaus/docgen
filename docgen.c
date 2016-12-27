@@ -43,6 +43,7 @@ main(int argc, char **argv)
         FileData = PlatformMemAlloc(FileSize);
         size_t Line = 3;
         b32 Ignore = 0;
+        b32 IsDocs = 0;
         
         while(fread(FileData, sizeof(char), FileSize, File))
         {
@@ -158,14 +159,19 @@ main(int argc, char **argv)
                 else if(((*Ptr == '{' && DocState == Sig) || *Ptr == ';' || (*Ptr == ')' && DocState != Sig)) && ShouldCopy && !ScopeLevel)
                 {
                     Assert(Idx < FileSize);
-                    
                     Buffer[Idx] = 0;
+                    
+                    if(!IsDocs && DocState != Name)
+                    {
+                        goto end;
+                    }
                     
                     // NOTE(zaklaus): Handle doc
                     switch(DocState)
                     {
                         case Name:
                         {
+                            IsDocs = 1;
                             fprintf(stdout, "0 %s#", Buffer);
                         }break;
                         
@@ -199,6 +205,7 @@ main(int argc, char **argv)
                             fprintf(stdout, "6#");
                         }break;
                     }
+                    end:
                     Idx = 0;
                     ZeroArray(FileSize, Buffer);
                     *Buffer = 0;
