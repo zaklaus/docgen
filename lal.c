@@ -6,20 +6,20 @@ doc_cat(Memory Arena)
 
 doc(arena_header)
 doc_string(Describes arena elements.)
-doc_sig(
+
 typedef struct
 {
     s32 Size;    // Size of the element.
     u32 Tag;     // Element's tag used for identification.
     u32 Offset;  // Memory offset from the base.
 } arena_header;
-)
+
 
 LinkedList(arena_header)
 
 doc(memory_arena)
 doc_string(Memory arena holding contigous block of memory and tracking of pushed objects.)
-doc_sig(
+
 typedef struct
 {
     memory_index Size;             // Allocated memory size. 
@@ -33,13 +33,13 @@ typedef struct
     Node_arena_header *Header;    // Linked list of tracked elements.
     Node_arena_header *HeaderEnd;
 } memory_arena;
-)
+
 
 doc_sep()
 
 doc(arena_flags)
 doc_string(Arena flags.)
-doc_sig(
+
 typedef enum
 {
     ArenaFlag_AllowRealloc = 0x1,    // Allows re-allocation of the memory, if expansion is required.
@@ -49,7 +49,7 @@ typedef enum
 
 doc(temp_memory)
 doc_string(Used to temporarily store short-living data in arena.)
-doc_sig(
+
 typedef struct
 {
     memory_arena *Arena;  // Memory Arena to be used.
@@ -86,12 +86,11 @@ DefaultTagScan(void)
 doc(ArenaInitialize)
 doc_string(Initializes Memory Arena with default values.)
 doc_example(ArenaInitialize(Arena, 128, MemBlock);)
-doc_sig(
+
 inline void
 ArenaInitialize(memory_arena *Arena, // Arena to be initialized.
                 memory_index Size,   // Size of the allocated memory.
                 void *Base)          // Memory block to be used with Arena.
-)
 {
     Arena->Size = Size;
     Arena->Base = (uint8 *)Base;
@@ -106,8 +105,8 @@ ArenaInitialize(memory_arena *Arena, // Arena to be initialized.
 
 doc(ArenaBuild)
 doc_string(Uses internal allocator to build new arena.)
-doc_example(ArenaBuild(Arena, 128);)
-doc_sig(
+doc_example(ArenaBuild(Arena, 128);
+
 inline void
 ArenaBuild(memory_arena *Arena, // Arena to be built.
            memory_index Size)   // The size to be pre-allocated.
@@ -119,8 +118,8 @@ ArenaBuild(memory_arena *Arena, // Arena to be built.
 
 doc(ArenaGetAlignmentOffset)
 doc_string(Calculates the offset required by specified alignment.)
-doc_example(ArenaGetAlignmentOffset(Arena, 8);)
-doc_sig(
+doc_example(ArenaGetAlignmentOffset(Arena, 8);
+
 inline memory_index
 ArenaGetAlignmentOffset(memory_arena *Arena,     // Target Arena.
                         memory_index Alignment)  // Desired alignment

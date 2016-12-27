@@ -49,8 +49,9 @@ main(int argc, char **argv)
             Ptr = FileData;
             size_t Idx = 0;
             b32 ShouldCopy = 0;
+            b32 ExpectBrace = 0;
             u8 DocState = None;
-            u8 ScopeLevel = 0;
+            s32 ScopeLevel = 0;
             do
             {
                 if(Ignore)
@@ -104,12 +105,21 @@ main(int argc, char **argv)
                     Ptr += 8;
                     //Buffer[Idx++] = *Ptr;
                 }
-                if(StringsAreEqualAB(8, (Ptr), 8, "doc_sig("))
+                if(StringsAreEqualAB(9, (Ptr), 9, "internal "))
+                {
+                    Assert(!Idx && !ShouldCopy);
+                    ShouldCopy = 1;
+                    DocState = Sig;
+                    Ptr += 9;
+                    //Buffer[Idx++] = *Ptr;
+                }
+                if(StringsAreEqualAB(8, (Ptr), 8, "typedef "))
                 {
                     Assert(!Idx && !ShouldCopy);
                     ShouldCopy = 1;
                     DocState = Sig;
                     Ptr += 8;
+                    ExpectBrace = 1;
                     //Buffer[Idx++] = *Ptr;
                 }
                 if(StringsAreEqualAB(8, (Ptr), 8, "doc_ret("))
@@ -132,13 +142,23 @@ main(int argc, char **argv)
                 {
                     ++ScopeLevel;
                 }
-                else if(*Ptr == ')' && ScopeLevel)
+                if(*Ptr == '{' && ExpectBrace)
+                {
+                    ++ScopeLevel;
+                    ExpectBrace = 0;
+                }
+                 if(*Ptr == '}' && ScopeLevel)
                 {
                     --ScopeLevel;
                 }
-                else if((*Ptr == ')') && ShouldCopy)
+                if(*Ptr == ')' && ScopeLevel)
+                {
+                    --ScopeLevel;
+                }
+                else if(((*Ptr == '{' && DocState == Sig) || *Ptr == ';' || (*Ptr == ')' && DocState != Sig)) && ShouldCopy && !ScopeLevel)
                 {
                     Assert(Idx < FileSize);
+                    
                     Buffer[Idx] = 0;
                     
                     // NOTE(zaklaus): Handle doc
@@ -186,7 +206,6 @@ main(int argc, char **argv)
                 }
                 if(ShouldCopy)
                 {
-                    
                     Buffer[Idx++] = *Ptr;
                 }
             }
