@@ -44,6 +44,7 @@ main(int argc, char **argv)
         size_t Line = 3;
         b32 Ignore = 0;
         b32 IsDocs = 0;
+        b32 IsSig = 0;
         
         while(fread(FileData, sizeof(char), FileSize, File))
         {
@@ -74,6 +75,7 @@ main(int argc, char **argv)
                     ShouldCopy = 1;
                     DocState = Name;
                     Ptr += 4;
+                    IsSig = 0;
                     //Buffer[Idx++] = *Ptr;
                 }
                 if(StringsAreEqualAB(11, (Ptr), 11, "doc_string("))
@@ -161,7 +163,8 @@ main(int argc, char **argv)
                     Assert(Idx < FileSize);
                     Buffer[Idx] = 0;
                     
-                    if(!IsDocs && DocState != Name)
+                    if((!IsDocs && DocState != Name) || 
+                       (IsSig && DocState == Sig))
                     {
                         goto end;
                     }
@@ -193,6 +196,7 @@ main(int argc, char **argv)
                         case Sig:
                         {
                             fprintf(stdout, "4 %s#", Buffer);
+                            IsSig = 1;
                         }break;
                         
                         case Ret:
