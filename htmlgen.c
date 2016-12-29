@@ -15,6 +15,7 @@ typedef struct
     memory_arena Expl;
     memory_arena Sig;
     memory_arena Ret;
+    memory_arena Embed;
     b32 Separate;
 } doc_elem;
 
@@ -29,6 +30,7 @@ reset_docs(doc_elem *docs)
     docs->Desc.Base = 0;
     docs->Sig.Base = 0;
     docs->Ret.Base = 0;
+    docs->Embed.Base = 0;
     docs->Separate = 0;
 }
 
@@ -221,6 +223,21 @@ main(int argc,const char **argv)
                 {
                     docs->Separate = 1;
                 }break;
+                
+                case '7':
+                {
+                    s32 Size = 0;
+                    do
+                    {
+                        Buffer[Size] = *Ptr;
+                        ++Size;
+                    }
+                    while(*Ptr && *++Ptr != '#');
+                    
+                    ArenaBuild(&docs->Embed, Size);
+                    docs->Embed.Flags = ArenaFlag_AllowRealloc;
+                    ArenaPushAndNullTerminate(&docs->Embed, Size, Buffer);
+                }break;
             }
         }
         while(*Ptr);
@@ -317,6 +334,11 @@ main(int argc,const char **argv)
                                 if(E->Value.Desc.Base)
                                 {
                                     printf("<p>%s</p>",E->Value.Desc.Base);
+                                }
+                                
+                                if(E->Value.Embed.Base)
+                                {
+                                    printf("<p>%s</p>",E->Value.Embed.Base);
                                 }
                                 
                                 if(E->Value.Expl.Base)

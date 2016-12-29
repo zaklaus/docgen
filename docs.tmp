@@ -1,6 +1,0 @@
-0 arena_header#1 Describes arena elements.#4 struct
-{
-    s32 Size;    // Size of the element.
-    u32 Tag;     // Element's tag used for identification.
-    u32 Offset;  // Memory offset from the base.
-} arena_header#

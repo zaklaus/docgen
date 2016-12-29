@@ -13,6 +13,7 @@ typedef enum
     Sig,
     Ret,
     Sep,
+    Embed,
 } Doc_States;
 
 int
@@ -125,6 +126,13 @@ main(int argc, char **argv)
                     Ptr += 8;
                     //Buffer[Idx++] = *Ptr;
                 }
+                if(StringsAreEqualAB(8, (Ptr), 8, "doc_skip("))
+                {
+                    Assert(!Idx && !ShouldCopy);
+                    Ptr += 8;
+                    IsSig = 1;
+                    //Buffer[Idx++] = *Ptr;
+                }
                 if(StringsAreEqualAB(8, (Ptr), 8, "doc_ret("))
                 {
                     Assert(!Idx && !ShouldCopy);
@@ -139,6 +147,15 @@ main(int argc, char **argv)
                     ShouldCopy = 1;
                     DocState = Sep;
                     Ptr += 8;
+                    //Buffer[Idx++] = *Ptr;
+                }
+                
+                if(StringsAreEqualAB(10, (Ptr), 10, "doc_embed("))
+                {
+                    Assert(!Idx && !ShouldCopy);
+                    ShouldCopy = 1;
+                    DocState = Embed;
+                    Ptr += 10;
                     //Buffer[Idx++] = *Ptr;
                 }
                 if(*Ptr == '(')
@@ -207,6 +224,29 @@ main(int argc, char **argv)
                         case Sep:
                         {
                             fprintf(stdout, "6#");
+                        }break;
+                        
+                        case Embed:
+                        {
+                             char *EmbeddedContent = "Couldn't open embedded file.";
+                            b32 Dealloc = 0;
+                            
+                            ms EmbedFileSize;
+                            s32 EmbedFile = IOFileOpenRead(Buffer, &EmbedFileSize);
+                            if(EmbedFile > -1)
+                            {
+                                EmbeddedContent = PlatformMemAlloc(EmbedFileSize+1);
+                            IOFileRead(EmbedFile, EmbeddedContent, EmbedFileSize);
+                                IOFileClose(EmbedFile);
+                            EmbeddedContent[EmbedFileSize] = 0;
+                                Dealloc = 1;
+                            }
+                            fprintf(stdout, "7 %s#", EmbeddedContent);
+                            
+                            if(Dealloc)
+                            {
+                                PlatformMemFree(EmbeddedContent);
+                            }
                         }break;
                     }
                     end:
